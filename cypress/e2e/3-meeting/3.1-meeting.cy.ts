@@ -40,7 +40,7 @@ describe("Create Meetings ", () => {
   });
 });
 
-describe.skip("Join Meetings", () => {
+describe("Join Meetings", () => {
   beforeEach(() => {
     cy.registerNewUser();
   });
@@ -79,7 +79,7 @@ describe.skip("Join Meetings", () => {
   });
 });
 
-describe.skip("Join as Guest", () => {
+describe("Join as Guest", () => {
   it("should join public meeting as Guest", () => {
     cy.navigateTo("/");
     cy.getPublicMeetingId().then((meetingId: string) => {
