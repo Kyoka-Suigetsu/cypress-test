@@ -1,4 +1,4 @@
-describe.skip("Language Preferences", () => {
+describe("Language Preferences", () => {
   beforeEach(() => {
     cy.viewport(1400, 768);
     cy.registerNewUser();

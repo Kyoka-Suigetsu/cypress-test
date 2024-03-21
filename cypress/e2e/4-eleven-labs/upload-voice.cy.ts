@@ -1,4 +1,4 @@
-describe.skip("Upload Voice Vie Eleven Labs", () => {
+describe("Upload Voice Vie Eleven Labs", () => {
 
   beforeEach(() => {
     cy.login();

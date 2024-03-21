@@ -3,6 +3,11 @@
 
 import { createId } from "@paralleldrive/cuid2";
 
+const { email, password } = Cypress.env("userData") as {
+  email: string;
+  password: string;
+};
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -83,13 +88,13 @@ Cypress.Commands.add("registerNewUser", () => {
     cy.url({ timeout: 10000 }).should("include", "/meeting");
   });
 
-  // cy.location("pathname").should("include", "/meeting");
-  // cy.getCookie("next-auth.session-token").should("exist");
-  // Cypress.env("newUserEmail" as string, userData.email);
-  // Cypress.env("newUserPassword" as string, userData.password);
+  cy.location("pathname").should("include", "/meeting");
+  cy.getCookie("next-auth.session-token").should("exist");
+  Cypress.env("newUserEmail" as string, userData.email);
+  Cypress.env("newUserPassword" as string, userData.password);
 
-  // cy.dataCy("create-meeting-form").should("be.visible");
-  // cy.dataCy("join-meeting-form").should("be.visible");
+  cy.dataCy("create-meeting-form").should("be.visible");
+  cy.dataCy("join-meeting-form").should("be.visible");
 });
 
 Cypress.Commands.add("cleanUser", () => {
@@ -101,10 +106,6 @@ Cypress.Commands.add("cleanUser", () => {
 });
 
 Cypress.Commands.add("login", () => {
-  const { email, password } = Cypress.env("userData") as {
-    email: string;
-    password: string;
-  };
   cy.intercept("POST", "/api/auth/callback/credentials").as("login");
   cy.intercept("POST", "**/meeting*").as("page-load");
 
@@ -146,30 +147,30 @@ Cypress.Commands.add("getMeetingIdFromPathname", () => {
   });
 });
 
-// Cypress.Commands.add(
-//   "verifyUserInMeeting",
-//   ({
-//     key = email,
-//     meetingType = "public",
-//   }: { key?: string; meetingType?: string } = {}) => {
-//     cy.dataCy("microphone-button", 10000).should("be.enabled");
-//     cy.dataCy("active-member-list", 10000).within(() => {
-//       cy.contains(key).should("exist");
-//     });
+Cypress.Commands.add(
+  "verifyUserInMeeting",
+  ({
+    key = email,
+    meetingType = "public",
+  }: { key?: string; meetingType?: string } = {}) => {
+    cy.dataCy("microphone-button", 10000).should("be.enabled");
+    cy.dataCy("active-member-list", 10000).within(() => {
+      cy.contains(key).should("exist");
+    });
 
-//     if (meetingType !== "guest") {
-//       cy.dataCy("share-meeting-dropdown-trigger")
-//         .should("have.css", "background-color")
-//         .then((color) => {
-//           if (meetingType === "private") {
-//             expect(color).to.equal("rgb(255, 0, 0)");
-//           } else if (meetingType === "public") {
-//             expect(color).to.equal("rgb(24, 201, 100)");
-//           }
-//         });
-//     }
-//   },
-// );
+    if (meetingType !== "guest") {
+      cy.dataCy("share-meeting-dropdown-trigger")
+        .should("have.css", "background-color")
+        .then((color) => {
+          if (meetingType === "private") {
+            expect(color).to.equal("rgb(255, 0, 0)");
+          } else if (meetingType === "public") {
+            expect(color).to.equal("rgb(24, 201, 100)");
+          }
+        });
+    }
+  },
+);
 
 Cypress.Commands.add("setPublicMeetingId", (id) => {
   Cypress.env("publicMeetingId", id);

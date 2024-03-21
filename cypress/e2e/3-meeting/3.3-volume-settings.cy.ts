@@ -1,4 +1,4 @@
-describe.skip("Volume Preferences", () => {
+describe("Volume Preferences", () => {
   beforeEach(() => {
     cy.viewport(1400, 768);
     cy.registerNewUser();

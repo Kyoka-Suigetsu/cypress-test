@@ -1,4 +1,4 @@
-describe.skip("Unauthenticated Navigation", () => {
+describe("Unauthenticated Navigation", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.checkLink("logo-link", "/");

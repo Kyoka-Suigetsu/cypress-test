@@ -1,4 +1,4 @@
-describe.skip("Create Meetings ", () => {
+describe("Create Meetings ", () => {
   beforeEach(() => {
     cy.registerNewUser();
   });

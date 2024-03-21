@@ -1,4 +1,4 @@
-describe.skip("FontSize Preferences", () => {
+describe("FontSize Preferences", () => {
   beforeEach(() => {
     cy.viewport(1400, 768);
     cy.registerNewUser();

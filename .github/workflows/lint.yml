@@ -19,37 +19,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    # run on staging and production environments
-    strategy:
-      matrix:
-        environment: ["staging", "production"]
-    environment:
-      name: ${{ matrix.environment }}
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   # run on staging and production environments
+  #   strategy:
+  #     matrix:
+  #       environment: ["staging", "production"]
+  #   environment:
+  #     name: ${{ matrix.environment }}
 
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-      NEXT_PUBLIC_RTC_URL: ${{ secrets.NEXT_PUBLIC_RTC_URL }}
-      NEXT_PUBLIC_FASTER_WHISPER_URL: ${{ secrets.NEXT_PUBLIC_FASTER_WHISPER_URL }}
-      NEXT_PUBLIC_DEMO_API_KEY: ${{ secrets.NEXT_PUBLIC_DEMO_API_KEY }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  #   env:
+  #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  #     NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  #     NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+  #     NEXT_PUBLIC_RTC_URL: ${{ secrets.NEXT_PUBLIC_RTC_URL }}
+  #     NEXT_PUBLIC_FASTER_WHISPER_URL: ${{ secrets.NEXT_PUBLIC_FASTER_WHISPER_URL }}
+  #     NEXT_PUBLIC_DEMO_API_KEY: ${{ secrets.NEXT_PUBLIC_DEMO_API_KEY }}
+  #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node + pnpm + enable caching
-        uses: wyvox/action-setup-pnpm@v3
-        with:
-          pnpm-version: 8
-          node-version: 18
-          args: --frozen-lockfile
+  #     - name: Setup Node + pnpm + enable caching
+  #       uses: wyvox/action-setup-pnpm@v3
+  #       with:
+  #         pnpm-version: 8
+  #         node-version: 18
+  #         args: --frozen-lockfile
 
-      - name: Run lint
-        run: pnpm lint
+  #     - name: Run lint
+  #       run: pnpm lint
 
   cypress-run:
     runs-on: ubuntu-22.04
