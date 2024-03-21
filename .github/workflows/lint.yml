@@ -1,0 +1,112 @@
+name: Lint
+
+on:
+  pull_request:
+    branches:
+      - staging
+      - main
+
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for running the workflow"
+        required: true
+        default: "Manual trigger"
+
+concurrency:
+  # Cancels pending runs when a PR gets updated.
+  group: ${{ github.head_ref || github.run_id }}-${{ github.actor }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    # run on staging and production environments
+    strategy:
+      matrix:
+        environment: ["staging", "production"]
+    environment:
+      name: ${{ matrix.environment }}
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      NEXT_PUBLIC_RTC_URL: ${{ secrets.NEXT_PUBLIC_RTC_URL }}
+      NEXT_PUBLIC_FASTER_WHISPER_URL: ${{ secrets.NEXT_PUBLIC_FASTER_WHISPER_URL }}
+      NEXT_PUBLIC_DEMO_API_KEY: ${{ secrets.NEXT_PUBLIC_DEMO_API_KEY }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node + pnpm + enable caching
+        uses: wyvox/action-setup-pnpm@v3
+        with:
+          pnpm-version: 8
+          node-version: 18
+          args: --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm lint
+
+  cypress-run:
+    runs-on: ubuntu-22.04
+    environment:
+      name: staging
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      NEXT_PUBLIC_RTC_URL: ${{ secrets.NEXT_PUBLIC_RTC_URL }}
+      NEXT_PUBLIC_FASTER_WHISPER_URL: ${{ secrets.NEXT_PUBLIC_FASTER_WHISPER_URL }}
+      NEXT_PUBLIC_DEMO_API_KEY: ${{ secrets.NEXT_PUBLIC_DEMO_API_KEY }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      PORT: 3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          headed: false
+          browser: chrome
+          build: pnpm next build
+          start: pnpm next start
+
+      # - name: Upload screenshots
+      #   uses: actions/upload-artifact@v3
+      #   if: failure()
+      #   with:
+      #     name: cypress-screenshots
+      #     path: cypress/screenshots

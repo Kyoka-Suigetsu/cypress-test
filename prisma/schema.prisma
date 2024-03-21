@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  apiKeys ApiKey[]
+  rooms   Room[]
+  users   User[]
+
+  @@index([name])
+}
+
+model Meeting {
+  id           String        @id @default(nanoid(5))
+  roomId       String?
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  isActive     Boolean       @default(false)
+  isPrivate    Boolean       @default(false)
+  chatHistory  Chat[]
+  room         Room?         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userMeetings UserMeeting[]
+
+  @@index([name])
+  @@index([roomId], map: "Meeting_roomId_fkey")
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  meetingId String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+  language  String
+  textId    String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId], map: "Chat_meetingId_fkey")
+  @@index([userId], map: "Chat_userId_fkey")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model User {
+  id                 String        @id @default(cuid())
+  name               String
+  email              String        @unique
+  emailVerified      DateTime?
+  password           String
+  image              String?
+  role               Role
+  organizationId     String?
+  userPreferenceId   String?       @unique
+  accounts           Account[]
+  chats              Chat[]
+  roomsOwned         Room[]
+  sessions           Session[]
+  organization       Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userMeetings       UserMeeting[]
+  rooms              UserRoom[]
+  UserVoice          UserVoice[]
+  UserPreference     UserPreference?  @relation(fields: [userPreferenceId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId], map: "User_organizationId_fkey")
+}
+
+model UserPreference {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  language  String  @default("eng_Latn")
+  volume    Decimal @default(1.0) @db.Decimal(3, 2)
+  muted     Boolean @default(false)
+  fontSize  Int     @default(16)
+  user      User?  
+
+  @@index([userId], map: "UserPreference_userId_fkey")
+}
+
+model Room {
+  id             String       @id @default(cuid())
+  name           String
+  description    String       @default("")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  ownedById      String
+  organizationId String
+  meetings       Meeting[]
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ownedBy        User         @relation(fields: [ownedById], references: [id], onDelete: Cascade)
+  userRooms      UserRoom[]
+
+  @@index([name, organizationId])
+  @@index([organizationId], map: "Room_organizationId_fkey")
+  @@index([ownedById], map: "Room_ownedById_fkey")
+}
+
+model UserRoom {
+  userId     String
+  roomId     String
+  permission PermissionStatus @default(PENDING)
+  sid        String?
+  room       Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roomId])
+  @@index([roomId], map: "UserRoom_roomId_fkey")
+}
+
+model UserMeeting {
+  userId     String
+  meetingId  String
+  permission PermissionStatus @default(PENDING)
+  sid        String?
+  joinedAt   DateTime?
+  usageTime  Int              @default(0)
+  meeting    Meeting          @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, meetingId])
+  @@index([meetingId], map: "userMeetings_meetingId_fkey")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, token])
+}
+
+model UserVoice {
+  voiceId String
+  userId  String
+  name    String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([voiceId, userId])
+  @@index([userId], map: "UserVoice_userId_fkey")
+}
+
+model Mapping {
+  id        String   @id @unique(map: "id") @db.VarChar(255)
+  meetingId String?
+  roomId    String?  @db.VarChar(255)
+  language  String?  @db.VarChar(255)
+  sids      String?  @db.MediumText
+  isActive  Boolean?
+}
+
+model ApiKey {
+  organizationId String
+  key            String       @unique
+  expires        DateTime
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId], map: "ApiKey_organizationId_fkey")
+}
+
+enum PermissionStatus {
+  GRANTED
+  DENIED
+  PENDING
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  PARTICIPANT
+  ANONYMOUS
+}

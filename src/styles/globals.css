@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 60% 96%;
+    --foreground: 358 88% 6%;
+
+    --primary: 225 85% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --accent: 173 69% 61;
+    --accent-foreground: 358 88% 6%;
+
+    --secondary: 128 98% 55%;
+    --secondary-foreground: 358 88% 6%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 221 69% 6%;
+
+    --primary: 225 85% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 128 89% 29%;
+    --secondary-foreground: 358 88% 6%;
+
+    --accent: 173 69% 39%;
+    --accent-foreground: 358 88% 6%;
+  }
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  color: #FBFCFE;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--nextui-secondary));
+  border-radius: 5px;
+}
+
+/* FireFox CSS */
+/* width */
+* {
+  scrollbar-width: thin;
+}
+
+/* Handle and Track */
+* {
+  scrollbar-color: hsl(var(--nextui-secondary)) transparent;
+}
