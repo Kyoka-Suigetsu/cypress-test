@@ -43,7 +43,7 @@ export default function Error({
         </ModalHeader>
         <ModalBody>
           <p>Details:</p>
-          <Code color="danger" radius="sm" className="whitespace-pre-line">
+          <Code color="danger" radius="md" className="whitespace-pre-line">
             {error.message}
           </Code>
         </ModalBody>
